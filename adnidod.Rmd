@@ -1,0 +1,254 @@
+---
+title: "adnidod"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(lme4)
+library(lmerTest)
+library(interactions)
+```
+
+
+```{r}
+
+adni <- read_csv("~/Documents/Northeastern/CCBH_Lab/Projects/ADNIDOD/data/ADNIDOD_clean.csv")
+
+model_orin <- lm(formula = PSQI ~  AD_anterior_internal_cap_l + TBI:AD_anterior_internal_cap_l + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4 + PTRACCAT, data = adni)
+
+plot(model, which = 4)
+library(lmtest)
+bptest(model)
+
+model <- glm(formula = PSQI ~  AD_anterior_internal_cap_l + TBI:AD_anterior_internal_cap_l + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + PTRACCAT, data = adni, family = Gamma())
+
+summary(model)
+
+ss <- sim_slopes(model, pred = AD_anterior_internal_cap_l, modx = TBI, robust = "HC3", control.fdr = TRUE, confint=TRUE)
+ss
+
+interact_plot(model, pred = AD_anterior_internal_cap_l, modx = TBI)
+sim_slopes(model, pred = AD_anterior_internal_cap_l, modx = TBI, robust = "HC3", control.fdr = TRUE)
+
+```
+
+
+```{r}
+#between group difference controlling for age, education, depression, current ptsd, lifetime ptsd, and site
+
+
+alic <- summary(lm(formula = data_adni$AD_anterior_internal_cap_l ~ data_adni$TBI + data_adni$PTAGE + data_adni$PTEDUCAT + data_adni$PTRACE + data_adni$gdscore + data_adni$ptsdcurr  + data_adni$ptsdlife + data_adni$APOE4 + data_adni$SITEID))
+
+
+alic <- lm(formula = AD_SLF_R ~  TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4 + PTRACCAT, data = adni)
+confint(alic, level=0.95)
+summary(alic)
+lm.beta(alic)
+
+#interaction total PSQI score and Axial Diffusivity in internal capsule
+summary(lm(formula = PSQI ~  AD_SCR_L + TBI:AD_SCR_L + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4 + PTRACCAT, data = ADNIDOD))
+
+fit_alic <- lm(formula = PSQI ~  AD_anterior_internal_cap_l + TBI:AD_anterior_internal_cap_l + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+
+summary(fit_alic)
+confint(fit_alic, level=0.95)
+lm.beta(fit_alic)
+ss <- sim_slopes(fit_alic, pred = AD_anterior_internal_cap_l, modx = TBI, johnson_neyman = TRUE, control.fdr = TRUE, confint=TRUE,  data = ADNIDOD_clean)
+ss
+fit_AD_SLF_R <- lm(formula = PSQI ~  AD_SLF_R + TBI:AD_SLF_R + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+summary(fit_aric)
+lm()
+
+confint(fit_aric, level=0.95)
+lm.beta(fit_aric)
+parameters::model_parameters(fit_alic, effects = "fixed", ci_method = "satterthwaite")
+t_to_eta2(3.70, df_error = 208)
+confint(lm(formula = PSQI ~  AD_anterior_internal_cap_l + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife, data = TBI))
+
+
+fit_pric <- lm(formula = PSQI ~  AD_post_internal_cap_r + TBI:AD_post_internal_cap_r + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+summary(fit_pric)
+confint(fit_pric, level=0.95)
+lm.beta(fit_pric)
+fit_plic <- lm(formula = PSQI ~  AD_post_internal_cap_l + TBI:AD_post_internal_cap_l + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_plic, level=0.95)
+summary(fit_plic)
+fit_slfl <- lm(formula = PSQI ~  AD_SLF_L + TBI:AD_SLF_L + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_slfl, level=0.95)
+summary(fit_slfl)
+fit_slfr <- lm(formula = PSQI ~  AD_SLF_R + TBI:AD_SLF_R + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_slfr, level=0.95)
+summary(fit_slfr)
+fit_for <- lm(formula = PSQI ~  AD_fornix1 + TBI:AD_fornix1 + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_for, level=0.95)
+summary(fit_for)
+fit_SCR <- lm(formula = PSQI ~  AD_SCR_R + TBI:AD_SCR_R + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_SCR, level=0.95)
+summary(fit_SCR)
+fit_SCRl <- lm(formula = PSQI ~  AD_SCR_L + TBI:AD_SCR_L + TBI + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = ADNIDOD_clean)
+confint(fit_SCRl, level=0.95)
+summary(fit_SCRl)
+
+coefs <- fit$coefficients
+
+fit <- lm(formula = PSQI ~ AD_anterior_internal_cap_l + SITEID + TBItotal + PTAGE + PTEDUCAT + gdscore + capscurr + capslife + APOE4, data = T1notbi)
+confint(fit, level=0.95)
+ss <- sim_slopes(fit_alic, pred = AD_anterior_internal_cap_l, modx = TBI, johnson_neyman = TRUE, control.fdr = TRUE,  data = TBI)
+confint(ss, level=0.95)
+
+#linear regression Axial Diffusivity and 1 year RAVLT delayed  recall in TBI
+summary(lm(formula = AD_19_t2_mean ~ AVDELTOT + SITEID + PTAGE + TBItotal + PTEDUCAT + gdscore + ptsdcurr + ptsdlife + PTRACCAT, data = TBI_t2))
+
+summary(lm(formula = AVDEL30MIN ~ TBI + SITEID + PTAGE + TBItotal + PTEDUCAT + gdscore + ptsdcurr + ptsdlife + PTRACCAT + APOE4, data = merged_df1))
+sd(merged_df1[merged_df1$TBI == 1, "AVDEL30MIN"], na.rm = TRUE)
+sd(merged_df1[merged_df1$TBI == 0, "AVDEL30MIN"], na.rm = TRUE)
+sd(merged_df1[merged_df1$TBI == 1, "AVDELTOT"], na.rm = TRUE)
+sd(merged_df1[merged_df1$TBI == 0, "AVDELTOT"], na.rm = TRUE)
+sd(merged_df1[merged_df1$TBI == 1, "AVTOT"], na.rm = TRUE)
+sd(merged_df1[merged_df1$TBI == 0, "AVTOT"], na.rm = TRUE)
+
+
+#linear mixed effect model
+fitRandomInterceptSlope <- lmer(AVTOT~ AD_anterior_internal_cap_l + AD_anterior_internal_cap_l_t1*timepoint + SITEID + PTAGE + TBItotal + PTEDUCAT + gdscore + ptsdcurr + ptsdlife + PTRACCAT  + APOE4 (1|SCRNO), data=na.omit(TBI))
+summary(fitRandomInterceptSlope)
+confint(fitRandomInterceptSlope, level=0.95)
+confint.merMod(fitRandomInterceptSlope, level=0.95, method="profile", devtol =  1e-6)
+
+
+probe_interaction(fitRandomInterceptSlope, pred = timepoint.x, modx = AD_anterior_internal_cap_l,
+                  alpha = .05, ci = 0.95, fdr = TRUE, theme_bw() + labs(title = "", legend.title = "Axial Diffusivity",
+              subtitle = "",
+              x = "Timepoint",
+              y = "RAVLT Delayed Recall") + theme(
+          text = element_text(size = 16, family = "Cambria")
+              )) 
+
+probe_interaction(fitRandomInterceptSlope, pred = timepoint.x, modx = AD_anterior_internal_cap_l) +
+  theme_bw() +
+  labs(title = "",
+       legend.title = "Axial Diffusivity",
+       subtitle = "",
+       x = "Timepoint",
+       y = "RAVLT Delayed Recall") +
+  theme(text = element_text(size = 16, family = "Cambria"))
+
+
+interact_plot(fitRandomInterceptSlope, pred = timepoint.x, modx = AD_anterior_internal_cap_l,
+                  alpha = .1, x.label = "Timepoint", y.label = "PSQI 12 months", legend.main = "Axial Diffusivity at Baseline",  colors = "Qual2") +
+  theme(text = element_text(size = 10, family = "Times New Roman"))
+        
+
+ss <- sim_slopes(fitRandomInterceptSlope, pred = timepoint.x, modx = AD_anterior_internal_cap_l, johnson_neyman = TRUE, control.fdr = TRUE,  data = TBI)
+
+```
+
+```{r}
+# interaction models
+library(rlang)
+library(ggplot2)
+ggplot(adni, aes(x = PSQI, y = AD_anterior_internal_cap_l)) + 
+  geom_point(aes(color = factor(TBI))) + 
+  theme(
+    # Hide panel borders and remove grid lines
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    # Change axis line
+    axis.line = element_line(colour = "black")
+    )  +
+  theme(text = element_text(size = 16, family = "Arial")) +
+  labs(y = expression(bold("Axial Diffusivity")), x = expression(bold("Sleep Disturbances at Baseline"))) +
+  geom_smooth(method = "lm", aes(color = factor(TBI)), show.legend = TRUE) +
+  scale_color_manual(values = c("#2c7fb8", "#d95f0e"), 
+                     labels = c("No TBI", "TBI"))
+ggplot(adni, aes(x = AD_anterior_internal_cap_l, y = PSQI)) + 
+  geom_point(aes(color = factor(TBI))) + 
+  theme(
+    # Hide panel borders and remove grid lines
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    # Change axis line
+    axis.line = element_line(colour = "black")
+    )  +
+  theme(text = element_text(size = 16, family = "Arial")) +
+  labs(y = expression(bold("Sleep Disturbances")), x = expression(bold("Axial Diffusivity"))) +
+  geom_smooth(method = "lm", aes(color = factor(TBI)), show.legend = TRUE) +
+  scale_color_manual(values = c("#2c7fb8", "#d95f0e"), 
+                     labels = c("No TBI", "TBI"))
+
+```
+
+```{r}
+#table 1
+mean(TBI$PTAGE)
+sd(TBI$PTAGE)
+mean(noTBI$PTAGE)
+sd(noTBI$PTAGE)
+
+mean(TBI$PTEDUCAT)
+sd(TBI$PTEDUCAT)
+mean(noTBI$PTEDUCAT)
+sd(noTBI$PTEDUCAT)
+
+mean(TBI$PSQI)
+sd(TBI$PSQI)
+mean(noTBI$PSQI)
+sd(noTBI$PSQI)
+
+mean(TBI$PTEDUCAT)
+sd(TBI$PTEDUCAT)
+mean(noTBI$PTEDUCAT)
+sd(noTBI$PTEDUCAT)
+
+mean(TBI$MMSCORE.x, na.rm = TRUE)
+sd(TBI$MMSCORE.x, na.rm = TRUE)
+mean(noTBI$MMSCORE.x, na.rm = TRUE)
+sd(noTBI$MMSCORE.x, na.rm = TRUE)
+
+mean(TBI$PSQ_comp1, na.rm = TRUE)
+sd(TBI$PSQ_comp1, na.rm = TRUE)
+mean(noTBI$PSQ_comp1, na.rm = TRUE)
+sd(noTBI$PSQ_comp1, na.rm = TRUE)
+
+mean(TBI$PSQ_comp2, na.rm = TRUE)
+sd(TBI$PSQ_comp2, na.rm = TRUE)
+mean(noTBI$PSQ_comp2, na.rm = TRUE)
+sd(noTBI$PSQ_comp2, na.rm = TRUE)
+
+mean(TBI$PSQ_comp3, na.rm = TRUE)
+sd(TBI$PSQ_comp3, na.rm = TRUE)
+mean(noTBI$PSQ_comp3, na.rm = TRUE)
+sd(noTBI$PSQ_comp3, na.rm = TRUE)
+
+mean(TBI$PSQ_comp4, na.rm = TRUE)
+sd(TBI$PSQ_comp4, na.rm = TRUE)
+mean(noTBI$PSQ_comp4, na.rm = TRUE)
+sd(noTBI$PSQ_comp4, na.rm = TRUE)
+
+mean(TBI$PSQ_comp5, na.rm = TRUE)
+sd(TBI$PSQ_comp5, na.rm = TRUE)
+mean(noTBI$PSQ_comp5, na.rm = TRUE)
+sd(noTBI$PSQ_comp5, na.rm = TRUE)
+
+mean(TBI$PSQ_comp6, na.rm = TRUE)
+sd(TBI$PSQ_comp6, na.rm = TRUE)
+mean(noTBI$PSQ_comp6, na.rm = TRUE)
+sd(noTBI$PSQ_comp6, na.rm = TRUE)
+
+mean(TBI$PSQ_comp7, na.rm = TRUE)
+sd(TBI$PSQ_comp7, na.rm = TRUE)
+mean(noTBI$PSQ_comp7, na.rm = TRUE)
+sd(noTBI$PSQ_comp7, na.rm = TRUE)
+```
+
+
+
+
