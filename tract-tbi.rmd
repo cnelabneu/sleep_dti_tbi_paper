@@ -454,4 +454,140 @@ pal <- wes_palette("Darjeeling1")
 # green/blue #81d8d0
 ```
 
+#ISI as ordinal
+#mutate ISI into categories
+df <- df_fitbir %>%
+  mutate(
+    ISI_Category_base = case_when(
+      ISI_total_score_base <= 7 ~ 1,
+      ISI_total_score_base <= 14 ~ 2,
+      ISI_total_score_base <= 21 ~ 3,
+      TRUE ~ 4  # Default case for values greater than 21
+    )
+  )
 
+df <- df %>%
+  mutate(
+    ISI_Category_base_bi = case_when(
+      ISI_total_score_base <= 7 ~ 0,
+      TRUE ~ 1  # Default case for values greater than 21
+    )
+  )
+
+df <- df %>%
+  mutate(
+    ISI_Category_six_bi = case_when(
+      ISI_total_score_six <= 7 ~ 0,
+      TRUE ~ 1  # Default case for values greater than 21
+    )
+  )
+  
+df <- df %>%
+  mutate(
+    ISI_Category_twelve_bi = case_when(
+      ISI_total_score_twelve <= 7 ~ 0,
+      TRUE ~ 1  # Default case for values greater than 21
+    )
+  )
+
+df <- df %>%
+  mutate(
+    ISI_Category_six = case_when(
+      ISI_total_score_six <= 7 ~ 1,
+      ISI_total_score_six <= 14 ~ 2,
+      ISI_total_score_six <= 21 ~ 3,
+      TRUE ~ 4 # Default case for values greater than 21
+    )
+  )  
+df <- df %>%
+  mutate(
+    ISI_Category_twelve = case_when(
+      ISI_total_score_twelve <= 7 ~ 1,
+      ISI_total_score_twelve <= 14 ~ 2,
+      ISI_total_score_twelve <= 21 ~ 3,
+      TRUE ~ 4  # Default case for values greater than 21
+    )
+  )  
+#subset to cases
+case <- subset(df, tbi=="1")
+control <- subset(df, tbi=="0")
+#standardize AD to same scale as ISI 
+case$AD_19_10000000_r1 <- 10000000*(case$AD_19_r1)
+case$ISI_Category_six <- as.factor(case$ISI_Category_six)
+case$ISI_Category_base <- na.omit(case$ISI_Category_base)
+case$educ <- ifelse(is.na(case$educ), 1, case$educ)
+
+model_base <- polr(ISI_Category_base ~ AD_19_10000000_r1 + age + educ + sex + site_numeric, data = case)
+model_six <- polr(ISI_Category_six ~ AD_19_10000000_r1 + age + educ + sex + site_numeric, data = case)
+model_twelve <- polr(ISI_Category_twelve ~ AD_19_10000000_r1 + age + educ + sex + site_numeric, data = case)
+model_base
+model_six
+model_twelve
+confint(model_base)
+confint(model_six)
+confint(model_twelve)
+
+model_base %>%
+  tbl_regression(exponentiate = T)
+model_six %>%
+  tbl_regression(exponentiate = T)
+model_twelve %>%
+  tbl_regression(exponentiate = T)
+coefficients <- summary(model_twelve)$coefficients
+
+p_value <- (1 - pnorm(abs(coefficients[ ,"t value"]), 0, 1))*2
+
+# bind back to coefficients
+coefficients <- cbind(coefficients, p_value)
+
+# calculate odds ratios
+odds_ratio <- exp(coefficients[ ,"Value"])
+
+# combine with coefficient and p_value
+(coefficients <- cbind(
+  coefficients[ ,c("Value", "p_value")],
+  odds_ratio
+))
+
+summary(model)
+z <- summary(test)$coefficients/summary(test)$standard.errors
+p <- (1 - pnorm(abs(z), 0, 1)) * 2
+p
+confint(test)
+OR.multinom(test, AD_19_r1, conf.level = 0.95)
+coefficients <- coef(test)
+odds_ratios <- exp(coefficients)
+se <- summary(test)$standard.errors
+
+# Calculate confidence intervals for odds ratios
+ci_lower <- exp(coefficients - 1.96 * se)
+ci_upper <- exp(coefficients + 1.96 * se)
+
+# Combine odds ratios and their confidence intervals
+odds_ratios_with_ci <- cbind(OddsRatio = odds_ratios, LowerCI = ci_lower, UpperCI = ci_upper)
+
+# Print odds ratios with confidence intervals
+print("Odds Ratios with 95% Confidence Intervals:")
+print(odds_ratios_with_ci)
+
+
+tidy(
+  model_base,
+  conf.int = FALSE,
+  conf.level = 0.95,
+  exponentiate = FALSE,
+  p.values = TRUE)
+
+
+coeffs <- model$coefficients
+se <- model$standard.errors
+summary(model)
+
+# Extract coefficients
+coeffs <- coef(model)
+
+# Exponentiate the coefficients to get odds ratios
+odds_ratios <- exp(coeffs)
+
+# Display the odds ratios
+print(odds_ratios)
